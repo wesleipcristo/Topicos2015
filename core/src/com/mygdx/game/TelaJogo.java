@@ -43,6 +43,8 @@ public class TelaJogo extends TelaBase {
     private Texture texturaMeteoro2;
     private Array<Image> meteoro1 = new Array<Image>();
     private Array<Image> meteoro2 = new Array<Image>();
+    private float pontuacao = 0;
+    private Array<Texture> explosoes = new Array<Texture>();
 
 
 
@@ -74,6 +76,27 @@ public class TelaJogo extends TelaBase {
         texturaTiro = new Texture("sprites/shot.png");
         texturaMeteoro1 = new Texture("sprites/enemie-1.png");
         texturaMeteoro2 = new Texture("sprites/enemie-2.png");
+        initTextExplosao();
+    }
+
+    private void initTextExplosao() {
+        explosoes.add(new Texture("sprites/explosion-1.png"));
+        explosoes.add(new Texture("sprites/explosion-2.png"));
+        explosoes.add(new Texture("sprites/explosion-3.png"));
+        explosoes.add(new Texture("sprites/explosion-4.png"));
+        explosoes.add(new Texture("sprites/explosion-5.png"));
+        explosoes.add(new Texture("sprites/explosion-6.png"));
+        explosoes.add(new Texture("sprites/explosion-7.png"));
+        explosoes.add(new Texture("sprites/explosion-8.png"));
+        explosoes.add(new Texture("sprites/explosion-9.png"));
+        explosoes.add(new Texture("sprites/explosion-10.png"));
+        explosoes.add(new Texture("sprites/explosion-11.png"));
+        explosoes.add(new Texture("sprites/explosion-12.png"));
+        explosoes.add(new Texture("sprites/explosion-13.png"));
+        explosoes.add(new Texture("sprites/explosion-14.png"));
+        explosoes.add(new Texture("sprites/explosion-15.png"));
+        explosoes.add(new Texture("sprites/explosion-16.png"));
+        explosoes.add(new Texture("sprites/explosion-17.png"));
     }
 
     /**
@@ -97,7 +120,7 @@ public class TelaJogo extends TelaBase {
         lblEstilo.font = fonte;
         lblEstilo.fontColor = Color.WHITE;
 
-        lblpontuacao = new Label("0 pontos", lblEstilo);
+        lblpontuacao = new Label("Pontuação Atual: ", lblEstilo);
         palco.addActor(lblpontuacao);
     }
 
@@ -123,13 +146,52 @@ public class TelaJogo extends TelaBase {
         capituraTeclas();
         atualizarJogador(delta);
         atualizarMeteoros(delta);
+        colidirTiro(delta);
 
 
         palco.act(delta);
         palco.draw();
 
     }
+    // ---------------------------------------------------------------------------------------------
+    private float frameExplosao =0 ;
+    private void colidirTiro(float delta) {
+        for (Image meteoro : meteoro1) {
+            for (Image tiro : tiros) {
+                if (tiro.getX() >= meteoro.getX() && tiro.getX() <= meteoro.getX() + meteoro.getWidth()) {
+                    if (tiro.getY() + tiro.getHeight() >= meteoro.getY()) {
+                        /*
+                        for (Texture explosao : explosoes) {
+                                meteoro.setDrawable(new SpriteDrawable(new Sprite(explosao)));
+                        }
+                        */
+                        meteoro1.removeValue(meteoro, true);
+                        meteoro.remove();
+                        tiros.removeValue(tiro, true);
+                        tiro.remove();
+                        pontuacao = pontuacao + meteoro.getY() / 5;
+                        lblpontuacao.setText("Pontuação Atual: " + (int) pontuacao);
+                    }
+                }
+            }
+        }for (Image meteoro : meteoro2) {
+            for (Image tiro : tiros) {
+                if (tiro.getX() >= meteoro.getX() && tiro.getX() <= meteoro.getX() + meteoro.getWidth()) {
+                    if (tiro.getY() + tiro.getHeight() >= meteoro.getY()) {
+                        meteoro2.removeValue(meteoro, true);
+                        meteoro.remove();
+                        tiros.removeValue(tiro, true);
+                        tiro.remove();
+                        pontuacao = pontuacao + meteoro.getY() / 5;
+                        lblpontuacao.setText("Pontuação Atual: " + (int) pontuacao);
+                    }
+                }
+            }
+        }
+    }
 
+
+    // ---------------------------------------------------------------------------------------------
     private float intervaloMeteoro = 100;
 
     private void atualizarMeteoros(float delta) {
@@ -138,7 +200,7 @@ public class TelaJogo extends TelaBase {
         if (tipo == 1 && intervaloMeteoro >= 100) {
             // criar meteoro1
             Image meteoro = new Image(texturaMeteoro1);
-            float x = MathUtils.random(0, camera.viewportWidth - meteoro.getImageWidth());
+            float x = MathUtils.random(0, camera.viewportWidth - meteoro.getWidth());
             float y = MathUtils.random(camera.viewportHeight, camera.viewportHeight * 2);
             meteoro.setPosition(x,y);
             meteoro1.add(meteoro);
@@ -147,7 +209,7 @@ public class TelaJogo extends TelaBase {
         }else if (tipo == 2 && intervaloMeteoro >= 100){
             // criar meteoro2
             Image meteoro = new Image(texturaMeteoro2);
-            float x = MathUtils.random(0, camera.viewportWidth - meteoro.getImageWidth());
+            float x = MathUtils.random(0, camera.viewportWidth - meteoro.getWidth());
             float y = MathUtils.random(camera.viewportHeight, camera.viewportHeight * 2);
             meteoro.setPosition(x,y);
             meteoro2.add(meteoro);
@@ -159,11 +221,19 @@ public class TelaJogo extends TelaBase {
             float x = meteoro.getX();
             float y = meteoro.getY() - (MathUtils.random(velocidade + 10, velocidade - 10) + 50) * delta;
             meteoro.setPosition(x,y);
+            if (meteoro.getY() <= 0){
+                meteoro2.removeValue(meteoro, true);
+                meteoro.remove();
+            }
         }
         for (Image meteoro : meteoro1) {
             float x = meteoro.getX();
             float y = meteoro.getY() - MathUtils.random(velocidade + 10, velocidade - 10) * delta;
             meteoro.setPosition(x,y);
+            if (meteoro.getY() <= 0){
+                meteoro1.removeValue(meteoro, true);
+                meteoro.remove();
+            }
         }
     }
 
@@ -256,13 +326,14 @@ public class TelaJogo extends TelaBase {
         if (Gdx.input.isKeyPressed(Input.Keys.DOWN)){
             indoBaixo = true;
         }
+        /*
         if (Gdx.input.isKeyPressed(Input.Keys.SPACE)){
             atirando = true;
         }
-        /*
+        */
         if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)){
             atirando = true;
-        }*/
+        }
     }
 
     /**
